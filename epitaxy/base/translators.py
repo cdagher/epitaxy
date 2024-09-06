@@ -1,8 +1,10 @@
-from typing import Dict, List, Tuple, Any, Optional, Union
+from typing import Dict, List, Tuple, Any, Optional, Union, Callable
 from jaxtyping import Array, Float, Int
 
 import jax
 from jax import numpy as jnp
+
+import numpy as np
 
 import equinox as eqx
 from equinox import Module
@@ -11,12 +13,12 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers, activations
 
-from dict import *
+from .dict import *
 
 
 class Translator:
 
-    def __call__(self, module: Module) -> Union[layers.Layer, activations.Activation]:
+    def __call__(self, module: Module) -> Union[layers.Layer, Callable]:
         if type(module) in d_layers.keys():
             # get the weights and biases (if any) from the Module
             weights: Array = module.weight
@@ -31,8 +33,10 @@ class Translator:
         else:
             raise ValueError(f"Module {type(module)} not found in translation dictionaries.")
         
+        if issubclass(type(module), eqx.nn.Linear):
+            return self.__LinearTranslator(module)
 
-    def __LinearTranslator(module: eqx.nn.Linear) -> layers.Dense:
+    def __LinearTranslator(self, module: eqx.nn.Linear) -> layers.Dense:
         if not issubclass(type(module), eqx.nn.Linear):
             raise ValueError(f"Module {type(module)} is not a Linear module.")
         
@@ -47,13 +51,15 @@ class Translator:
             activation=None,
             use_bias=use_bias,
             input_dim=(1, in_features),
-            kernel_initializer=tf.constant_initializer(weights),
-            bias_initializer=tf.constant_initializer(biases) if use_bias else 'zeros'
+            kernel_initializer=tf.constant_initializer(np.array(weights).T),
+            bias_initializer=tf.constant_initializer(np.array(biases)) if use_bias else 'zeros'
         )
+
+        ret.build(input_shape=(1, in_features))
 
         return ret
     
-    def __ConvTranslator(module: eqx.nn.Conv) -> layers.Conv:
+    def __ConvTranslator(module: eqx.nn.Conv) -> layers.Layer:
         if not issubclass(type(module), eqx.nn.Conv):
             raise ValueError(f"Module {type(module)} is not a Conv module.")
         
@@ -95,7 +101,7 @@ class Translator:
 
         return ret
     
-    def __PoolTranslator(module: eqx.nn.Pool) -> layers.Pool:
+    def __PoolTranslator(module: eqx.nn.Pool) -> layers.Layer:
         if not issubclass(type(module), eqx.nn.Pool):
             raise ValueError(f"Module {type(module)} is not a Pool module.")
         
