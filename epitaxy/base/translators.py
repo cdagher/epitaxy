@@ -19,22 +19,16 @@ from .dict import *
 class Translator:
 
     def __call__(self, module: Module) -> Union[layers.Layer, Callable]:
-        if type(module) in d_layers.keys():
-            # get the weights and biases (if any) from the Module
-            weights: Array = module.weight
-            biases: Array = module.bias
-            use_bias: bool = module.use_bias
-            in_features: Int = module.in_features
-            out_features: Int = module.out_features
-            pass    
-        elif type(module) in d_activations.keys():
-            # get the activation function from the module
-            pass
-        else:
-            raise ValueError(f"Module {type(module)} not found in translation dictionaries.")
-        
-        if issubclass(type(module), eqx.nn.Linear):
+        if isinstance(module, eqx.nn.Linear):
             return self.__LinearTranslator(module)
+        elif isinstance(module, eqx.nn.Conv):
+            return self.__ConvTranslator(module)
+        elif isinstance(module, eqx.nn.Pool):
+            return self.__PoolTranslator(module)
+        elif isinstance(module, eqx.nn.BatchNorm):
+            return self.__BatchNormTranslator(module)
+        else:
+            raise ValueError(f"Module {type(module)} not found in translation dictionaries or is unsupported.")
 
     def __LinearTranslator(self, module: eqx.nn.Linear) -> layers.Dense:
         if not issubclass(type(module), eqx.nn.Linear):
@@ -59,7 +53,7 @@ class Translator:
 
         return ret
     
-    def __ConvTranslator(module: eqx.nn.Conv) -> layers.Layer:
+    def __ConvTranslator(self, module: eqx.nn.Conv) -> layers.Layer:
         if not issubclass(type(module), eqx.nn.Conv):
             raise ValueError(f"Module {type(module)} is not a Conv module.")
         
@@ -76,32 +70,37 @@ class Translator:
         num_spatial_dims: Int = module.num_spatial_dims
 
         if padding_mode == 'ZEROS':
-            padding = 'same'
+            padding = 'valid'
         else:
             padding = 'valid'
             print(f"Warning: Unrecognized padding mode '{padding_mode}'. Using 'valid' padding instead.")
             
-        
-        ret = layers.Conv(
-            rank=num_spatial_dims,
-            filters=out_channels,
-            kernel_size=kernel_size,
-            strides=stride,
-            padding=padding_mode,
-            data_format=None,
-            dilation_rate=dilation,
-            groups=groups,
-            activation=None,
-            use_bias=use_bias,
-            kernel_initializer=tf.constant_initializer(weights),
-            bias_initializer=tf.constant_initializer(biases) if use_bias else 'zeros'
-        )
+        kwargs = {
+            'filters': out_channels,
+            'kernel_size': kernel_size,
+            'strides': stride,
+            'padding': padding,
+            'data_format': None,
+            'dilation_rate': dilation,
+            'groups': groups,
+            'activation': None,
+            'use_bias': use_bias,
+            'kernel_initializer': tf.constant_initializer(np.array(weights).T),
+            'bias_initializer': tf.constant_initializer(np.array(biases)) if use_bias else 'zeros'
+        }
 
-        ret.build(input_shape=(1, in_channels, *kernel_size))
+        if num_spatial_dims == 1:
+            ret = layers.Conv1D(**kwargs)
+        elif num_spatial_dims == 2:
+            ret = layers.Conv2D(**kwargs)
+        elif num_spatial_dims == 3:
+            ret = layers.Conv3D(**kwargs)
+
+        # ret.build(input_shape=(in_channels,))
 
         return ret
     
-    def __PoolTranslator(module: eqx.nn.Pool) -> layers.Layer:
+    def __PoolTranslator(self, module: eqx.nn.Pool) -> layers.Layer:
         if not issubclass(type(module), eqx.nn.Pool):
             raise ValueError(f"Module {type(module)} is not a Pool module.")
         
@@ -180,7 +179,7 @@ class Translator:
         
         return ret
     
-    def __BatchNormTranslator(module: eqx.nn.BatchNorm) -> layers.BatchNormalization:
+    def __BatchNormTranslator(self, module: eqx.nn.BatchNorm) -> layers.BatchNormalization:
         if not issubclass(type(module), eqx.nn.BatchNorm):
             raise ValueError(f"Module {type(module)} is not a BatchNorm module.")
         
