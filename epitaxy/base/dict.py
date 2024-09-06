@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Any, Union
 
 import jax
 from jax import numpy as jnp
@@ -12,7 +12,7 @@ from tensorflow.keras import layers, activations
 
 d_layers: Dict[Module, keras.layers.Layer] = {
     eqx.nn.Linear: layers.Dense,
-    eqx.nn.Conv: layers.Conv,
+    eqx.nn.Conv: Union[layers.Conv1D, layers.Conv2D, layers.Conv3D],
     eqx.nn.Conv1d: layers.Conv1D,
     eqx.nn.Conv2d: layers.Conv2D,
     eqx.nn.Conv3d: layers.Conv3D,
@@ -37,10 +37,10 @@ d_activations: Dict[str, keras.layers.Activation] = {
     jax.nn.relu: layers.ReLU,
     jax.nn.leaky_relu: layers.LeakyReLU,
     eqx.nn.PReLU: layers.PReLU,
-    jax.nn.sigmoid: activations.Sigmoid,
-    jax.nn.tanh: activations.Tanh,
+    jax.nn.sigmoid: activations.sigmoid,
+    jax.nn.tanh: activations.tanh,
     jax.nn.elu: layers.ELU,
-    jax.nn.softplus: activations.Softplus,
-    jax.nn.softmax: activations.Softmax,
+    jax.nn.softplus: activations.softplus,
+    jax.nn.softmax: activations.softmax,
     jnp.ravel: layers.Flatten
 }
