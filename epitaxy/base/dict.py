@@ -34,12 +34,12 @@ d_layers: Dict[Module, keras.layers.Layer] = {
 }
 
 d_activations: Dict[str, keras.layers.Activation] = {
-    jax.nn.relu: layers.ReLU,
+    jax.nn.relu: activations.relu,
     jax.nn.leaky_relu: layers.LeakyReLU,
     eqx.nn.PReLU: layers.PReLU,
     jax.nn.sigmoid: activations.sigmoid,
     jax.nn.tanh: activations.tanh,
-    jax.nn.elu: layers.ELU,
+    jax.nn.elu: activations.elu,
     jax.nn.softplus: activations.softplus,
     jax.nn.softmax: activations.softmax,
     jnp.ravel: layers.Flatten
