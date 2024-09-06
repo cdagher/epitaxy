@@ -230,3 +230,24 @@ def test_AvgPool3DTranslator():
 
     assert np.allclose(y, y_expected)
 
+def test_BatchNormalizationTranslator():
+    bn = eqx.nn.BatchNorm1d(3)
+    translator = Translator()
+    translation = translator(bn)
+
+    # Check that the translation is a well-formed BatchNormalization layer
+    assert issubclass(type(translation), layers.BatchNormalization)
+    assert translation.axis == -1
+
+    # Check that the weights and biases are the same
+    assert np.allclose(translation.gamma, np.array(bn.weight))
+    assert np.allclose(translation.beta, np.array(bn.bias))
+    assert np.allclose(translation.moving_mean, np.array(bn.running_mean))
+    assert np.allclose(translation.moving_variance, np.array(bn.running_var))
+
+    # Check that the output is the same
+    x = np.ones((1, 3))
+    y = translation(x).numpy()
+    y_expected = bn(x)
+
+    assert np.allclose(y, y_expected)
