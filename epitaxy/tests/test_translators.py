@@ -36,8 +36,8 @@ def test_LinearTranslator():
 
     # Check that the output is the same
     x = np.ones((1, 10))
-    y = translation(x).numpy().reshape(5,)
-    y_expected = linear(x.reshape(10,))
+    y = translation(x).numpy().squeeze()
+    y_expected = linear(x.squeeze())
 
     assert np.allclose(y, y_expected)
 
@@ -63,16 +63,64 @@ def test_Conv1DTranslator():
 
     # Check that the output is the same
     x = np.ones((1, 3, 3))
-    y = translation(x).numpy().reshape(5,)
-    y_expected = conv(x.reshape(3, 3)).reshape(5,)
+    y = translation(x).numpy().squeeze()
+    y_expected = conv(x.squeeze()).squeeze()
 
     assert np.allclose(y, y_expected)
 
 def test_Conv2DTranslator():
-    assert False
+    conv = eqx.nn.Conv2d(3, 5, 3, use_bias=True, key=jr.PRNGKey(0))
+    translator = Translator()
+    translation = translator(conv)
+
+    # Check that the translation is a well-formed Conv2D layer
+    assert issubclass(type(translation), layers.Conv2D)
+    assert translation.filters == 5
+    assert translation.kernel_size == (3, 3)
+    assert translation.strides == (1, 1)
+    assert translation.activation == activations.linear
+    assert translation.use_bias == True
+
+    # build the layer
+    translation.build(input_shape=(1, 3, 3, 3))
+
+    # Check that the weights and biases are the same
+    assert np.allclose(translation.kernel, np.array(conv.weight).T)
+    assert np.allclose(translation.bias, np.array(conv.bias.reshape(5,)))
+
+    # Check that the output is the same
+    x = np.ones((1, 3, 3, 3))
+    y = translation(x).numpy().squeeze()
+    y_expected = conv(x.squeeze()).squeeze()
+    
+    assert np.allclose(y, y_expected)
 
 def test_Conv3DTranslator():
-    assert False
+    conv = eqx.nn.Conv3d(3, 5, 3, use_bias=True, key=jr.PRNGKey(0))
+    translator = Translator()
+    translation = translator(conv)
+
+    # Check that the translation is a well-formed Conv3D layer
+    assert issubclass(type(translation), layers.Conv3D)
+    assert translation.filters == 5
+    assert translation.kernel_size == (3, 3, 3)
+    assert translation.strides == (1, 1, 1)
+    assert translation.activation == activations.linear
+    assert translation.use_bias == True
+
+    # build the layer
+    translation.build(input_shape=(1, 3, 3, 3, 3))
+
+    # Check that the weights and biases are the same
+    assert np.allclose(translation.kernel, np.array(conv.weight).T)
+    assert np.allclose(translation.bias, np.array(conv.bias.reshape(5,)))
+
+    # Check that the output is the same
+    x = np.ones((1, 3, 3, 3, 3))
+    y = translation(x).numpy().squeeze()
+    y_expected = conv(x.squeeze()).squeeze()
+    
+    assert np.allclose(y, y_expected)
 
 def test_MaxPool1DTranslator():
     assert False
