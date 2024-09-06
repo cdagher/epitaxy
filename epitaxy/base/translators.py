@@ -1,8 +1,6 @@
 from typing import Dict, List, Tuple, Any, Optional, Union
 from jaxtyping import Array, Float, Int
 
-from abc import ABC
-
 import jax
 from jax import numpy as jnp
 
@@ -17,10 +15,6 @@ from dict import *
 
 
 class Translator:
-    # _module: Module
-    # _translation_types: Tuple = (layers.Layer, activations.Activation)
-    # _type: Union[layers.Layer, activations.Activation]
-    # _translation: Union[layers.Layer, activations.Activation]
 
     def __call__(self, module: Module) -> Union[layers.Layer, activations.Activation]:
         if type(module) in d_layers.keys():
@@ -94,8 +88,7 @@ class Translator:
             activation=None,
             use_bias=use_bias,
             kernel_initializer=tf.constant_initializer(weights),
-            bias_initializer=tf.constant_initializer(biases) if use_bias else 'zeros',
-            activation=None
+            bias_initializer=tf.constant_initializer(biases) if use_bias else 'zeros'
         )
 
         ret.build(input_shape=(1, in_channels, *kernel_size))
@@ -105,3 +98,85 @@ class Translator:
     def __PoolTranslator(module: eqx.nn.Pool) -> layers.Pool:
         if not issubclass(type(module), eqx.nn.Pool):
             raise ValueError(f"Module {type(module)} is not a Pool module.")
+        
+        if issubclass(type(module), eqx.nn.MaxPool):
+            pool_type = 'max'
+        elif issubclass(type(module), eqx.nn.AvgPool):
+            pool_type = 'avg'
+
+        kernel_size: Tuple[Int, ...] = module.kernel_size
+        stride: Tuple[Int, ...] = module.stride
+        padding: Tuple[Tuple[Int, Int], ...] = module.padding
+        use_ceil: bool = module.use_ceil
+
+        spatial_dims = module.num_spatial_dims
+
+        if isinstance(padding, int):
+            if padding == kernel_size:
+                padding = 'same'
+        else:
+            padding = 'valid'
+            print(f"Warning: Unsupported padding amount '{padding}'. Using 'valid' padding instead.")
+
+        if spatial_dims == 1:
+            if pool_type == 'max':
+                ret = layers.MaxPooling1D(
+                    pool_size=kernel_size,
+                    strides=stride,
+                    padding=padding,
+                    data_format=None,
+                    name=None
+                )
+            else:
+                ret = layers.AveragePooling1D(
+                    pool_size=kernel_size,
+                    strides=stride,
+                    padding=padding,
+                    data_format=None,
+                    name=None
+                )
+        elif spatial_dims == 2:
+            if pool_type == 'max':
+                ret = layers.MaxPooling2D(
+                    pool_size=kernel_size,
+                    strides=stride,
+                    padding=padding,
+                    data_format=None,
+                    name=None
+                )
+            else:
+                ret = layers.AveragePooling2D(
+                    pool_size=kernel_size,
+                    strides=stride,
+                    padding=padding,
+                    data_format=None,
+                    name=None
+                )
+        elif spatial_dims == 3:
+            if pool_type == 'max':
+                ret = layers.MaxPooling3D(
+                    pool_size=kernel_size,
+                    strides=stride,
+                    padding=padding,
+                    data_format=None,
+                    name=None
+                )
+            else:
+                ret = layers.AveragePooling3D(
+                    pool_size=kernel_size,
+                    strides=stride,
+                    padding=padding,
+                    data_format=None,
+                    name=None
+                )
+        else:
+            raise ValueError(f"Unsupported number of spatial dimensions: {spatial_dims}.")
+        
+        return ret
+    
+    def __BatchNormTranslator(module: eqx.nn.BatchNorm) -> layers.BatchNormalization:
+        if not issubclass(type(module), eqx.nn.BatchNorm):
+            raise ValueError(f"Module {type(module)} is not a BatchNorm module.")
+        
+        raise NotImplementedError("BatchNormTranslator not yet implemented.")
+           
