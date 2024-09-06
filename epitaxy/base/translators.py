@@ -104,9 +104,9 @@ class Translator:
         if not issubclass(type(module), eqx.nn.Pool):
             raise ValueError(f"Module {type(module)} is not a Pool module.")
         
-        if issubclass(type(module), eqx.nn.MaxPool):
+        if issubclass(type(module), (eqx.nn.MaxPool1d, eqx.nn.MaxPool2d, eqx.nn.MaxPool3d)):
             pool_type = 'max'
-        elif issubclass(type(module), eqx.nn.AvgPool):
+        elif issubclass(type(module), (eqx.nn.AvgPool1d, eqx.nn.AvgPool2d, eqx.nn.AvgPool3d)):
             pool_type = 'avg'
 
         kernel_size: Tuple[Int, ...] = module.kernel_size
