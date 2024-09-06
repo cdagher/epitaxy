@@ -123,20 +123,110 @@ def test_Conv3DTranslator():
     assert np.allclose(y, y_expected)
 
 def test_MaxPool1DTranslator():
-    assert False
+    pool = eqx.nn.MaxPool1d(3, 2, padding=0)
+    translator = Translator()
+    translation = translator(pool)
+
+    # Check that the translation is a well-formed MaxPooling1D layer
+    assert issubclass(type(translation), layers.MaxPooling1D)
+    assert translation.pool_size == (3,)
+    assert translation.strides == (2,)
+    assert translation.padding == 'valid'
+
+    # Check that the output is the same
+    x = np.ones((1, 10, 1))
+    y = translation(x).numpy().squeeze()
+    y_expected = pool(x.reshape((1, 10))).squeeze()
+
+    assert np.allclose(y, y_expected)
 
 def test_MaxPool2DTranslator():
-    assert False
+    pool = eqx.nn.MaxPool2d(3, 2, padding=0)
+    translator = Translator()
+    translation = translator(pool)
+
+    # Check that the translation is a well-formed MaxPooling2D layer
+    assert issubclass(type(translation), layers.MaxPooling2D)
+    assert translation.pool_size == (3, 3)
+    assert translation.strides == (2, 2)
+    assert translation.padding == 'valid'
+
+    # Check that the output is the same
+    x = np.ones((1, 10, 10, 1))
+    y = translation(x).numpy().squeeze()
+    y_expected = pool(x.reshape((1, 10, 10))).squeeze()
+
+    assert np.allclose(y, y_expected)
 
 def test_MaxPool3DTranslator():
-    assert False
+    pool = eqx.nn.MaxPool3d(3, 2, padding=0)
+    translator = Translator()
+    translation = translator(pool)
+
+    # Check that the translation is a well-formed MaxPooling3D layer
+    assert issubclass(type(translation), layers.MaxPooling3D)
+    assert translation.pool_size == (3, 3, 3)
+    assert translation.strides == (2, 2, 2)
+    assert translation.padding == 'valid'
+
+    # Check that the output is the same
+    x = np.ones((1, 10, 10, 10, 1))
+    y = translation(x).numpy().squeeze()
+    y_expected = pool(x.reshape((1, 10, 10, 10))).squeeze()
+
+    assert np.allclose(y, y_expected)
 
 def test_AvgPool1DTranslator():
-    assert False
+    pool = eqx.nn.AvgPool1d(3, 2, padding=0)
+    translator = Translator()
+    translation = translator(pool)
+
+    # Check that the translation is a well-formed AveragePooling1D layer
+    assert issubclass(type(translation), layers.AveragePooling1D)
+    assert translation.pool_size == (3,)
+    assert translation.strides == (2,)
+    assert translation.padding == 'valid'
+
+    # Check that the output is the same
+    x = np.ones((1, 10, 1))
+    y = translation(x).numpy().squeeze()
+    y_expected = pool(x.reshape((1, 10))).squeeze()
+
+    assert np.allclose(y, y_expected)
 
 def test_AvgPool2DTranslator():
-    assert False
+    pool = eqx.nn.AvgPool2d(3, 2, padding=0)
+    translator = Translator()
+    translation = translator(pool)
+
+    # Check that the translation is a well-formed AveragePooling2D layer
+    assert issubclass(type(translation), layers.AveragePooling2D)
+    assert translation.pool_size == (3, 3)
+    assert translation.strides == (2, 2)
+    assert translation.padding == 'valid'
+
+    # Check that the output is the same
+    x = np.ones((1, 10, 10, 1))
+    y = translation(x).numpy().squeeze()
+    y_expected = pool(x.reshape((1, 10, 10))).squeeze()
+
+    assert np.allclose(y, y_expected)
 
 def test_AvgPool3DTranslator():
-    assert False
+    pool = eqx.nn.AvgPool3d(3, 2, padding=0)
+    translator = Translator()
+    translation = translator(pool)
+
+    # Check that the translation is a well-formed AveragePooling3D layer
+    assert issubclass(type(translation), layers.AveragePooling3D)
+    assert translation.pool_size == (3, 3, 3)
+    assert translation.strides == (2, 2, 2)
+    assert translation.padding == 'valid'
+
+    # Check that the output is the same
+    x = np.ones((1, 10, 10, 10, 1))
+    y = translation(x).numpy().squeeze()
+    y_expected = pool(x.reshape((1, 10, 10, 10))).squeeze()
+
+    assert np.allclose(y, y_expected)
 
