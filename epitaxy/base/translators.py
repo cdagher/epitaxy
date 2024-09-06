@@ -123,57 +123,29 @@ class Translator:
             padding = 'valid'
             print(f"Warning: Unsupported padding amount '{padding}'. Using 'valid' padding instead.")
 
+        kwargs = {
+            'pool_size': kernel_size,
+            'strides': stride,
+            'padding': padding,
+            'data_format': None,
+            'name': None
+        }
+
         if spatial_dims == 1:
             if pool_type == 'max':
-                ret = layers.MaxPooling1D(
-                    pool_size=kernel_size,
-                    strides=stride,
-                    padding=padding,
-                    data_format=None,
-                    name=None
-                )
+                ret = layers.MaxPooling1D(**kwargs)
             else:
-                ret = layers.AveragePooling1D(
-                    pool_size=kernel_size,
-                    strides=stride,
-                    padding=padding,
-                    data_format=None,
-                    name=None
-                )
+                ret = layers.AveragePooling1D(**kwargs)
         elif spatial_dims == 2:
             if pool_type == 'max':
-                ret = layers.MaxPooling2D(
-                    pool_size=kernel_size,
-                    strides=stride,
-                    padding=padding,
-                    data_format=None,
-                    name=None
-                )
+                ret = layers.MaxPooling2D(**kwargs)
             else:
-                ret = layers.AveragePooling2D(
-                    pool_size=kernel_size,
-                    strides=stride,
-                    padding=padding,
-                    data_format=None,
-                    name=None
-                )
+                ret = layers.AveragePooling2D(**kwargs)
         elif spatial_dims == 3:
             if pool_type == 'max':
-                ret = layers.MaxPooling3D(
-                    pool_size=kernel_size,
-                    strides=stride,
-                    padding=padding,
-                    data_format=None,
-                    name=None
-                )
+                ret = layers.MaxPooling3D(**kwargs)
             else:
-                ret = layers.AveragePooling3D(
-                    pool_size=kernel_size,
-                    strides=stride,
-                    padding=padding,
-                    data_format=None,
-                    name=None
-                )
+                ret = layers.AveragePooling3D(**kwargs)
         else:
             raise ValueError(f"Unsupported number of spatial dimensions: {spatial_dims}.")
         
