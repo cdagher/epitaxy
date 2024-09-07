@@ -1,6 +1,8 @@
 from typing import Dict, List, Tuple, Any, Optional, Union, Callable
 from jaxtyping import Array, Float, Int
 
+from enum import Enum
+
 import jax
 from jax import numpy as jnp
 
@@ -16,7 +18,7 @@ from tensorflow.keras import layers, activations
 from .dict import *
 
 
-class Translator:
+class LayerTranslator:
 
     def __call__(self, module: Module) -> Union[layers.Layer, Callable]:
         if isinstance(module, eqx.nn.Linear):
@@ -185,3 +187,41 @@ class Translator:
         
         raise NotImplementedError("BatchNormTranslator not yet implemented.")
            
+
+class ModelType(Enum):
+    SEQUENTIAL = 1
+
+class ModelTranslator:
+
+    _layer_translator: LayerTranslator
+    _layers: List[Module] = []
+
+    def __init__(self):
+        self._layer_translator = LayerTranslator()
+
+    def __call__(self, model: Module, model_type: ModelType) -> keras.Model:
+        if not issubclass(type(model), Module):
+            raise ValueError(f"Model {type(model)} is not a Module.")
+        
+        if model_type == ModelType.SEQUENTIAL:
+            return self.__SequentialTranslator(model)
+
+    def __SequentialTranslator(self, model: Module) -> keras.Sequential:
+        # if not issubclass(type(model), eqx.nn.Sequential):
+        #     raise ValueError(f"Model {type(model)} is not a Sequential model.")
+        
+        model_layers = model.layers
+        input_shape = model.in_size
+        output_shape = model.out_size
+
+        # ret = keras.Sequential()
+        # # ret.add(layers.InputLayer(input_shape=input_shape))
+        # for l in model_layers:
+        #     t = self._layer_translator(l)
+        #     ret.add(t)
+        translated_layers = [self._layer_translator(l) for l in model_layers]
+        for i, l in enumerate(translated_layers):
+            print(f"\nLayer {i}:\n{l}")
+        ret = keras.Sequential(translated_layers)
+        
+        return ret
