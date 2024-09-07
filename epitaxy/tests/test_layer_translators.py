@@ -1,5 +1,5 @@
 from epitaxy.base import *
-from epitaxy.base.translators import Translator
+from epitaxy.base.translators import LayerTranslator
 import pytest
 
 from typing import Dict, List, Tuple, Any, Optional, Union
@@ -21,7 +21,7 @@ from tensorflow.keras import layers, activations
 
 def test_LinearTranslator():
     linear = eqx.nn.Linear(10, 5, use_bias=True, key=jr.PRNGKey(0))
-    translator = Translator()
+    translator = LayerTranslator()
     translation = translator(linear)
 
     # Check that the translation is a well-formed Dense layer
@@ -43,7 +43,7 @@ def test_LinearTranslator():
 
 def test_Conv1DTranslator():
     conv = eqx.nn.Conv1d(3, 5, 3, use_bias=True, key=jr.PRNGKey(0))
-    translator = Translator()
+    translator = LayerTranslator()
     translation = translator(conv)
 
     # Check that the translation is a well-formed Conv1D layer
@@ -70,7 +70,7 @@ def test_Conv1DTranslator():
 
 def test_Conv2DTranslator():
     conv = eqx.nn.Conv2d(3, 5, 3, use_bias=True, key=jr.PRNGKey(0))
-    translator = Translator()
+    translator = LayerTranslator()
     translation = translator(conv)
 
     # Check that the translation is a well-formed Conv2D layer
@@ -97,7 +97,7 @@ def test_Conv2DTranslator():
 
 def test_Conv3DTranslator():
     conv = eqx.nn.Conv3d(3, 5, 3, use_bias=True, key=jr.PRNGKey(0))
-    translator = Translator()
+    translator = LayerTranslator()
     translation = translator(conv)
 
     # Check that the translation is a well-formed Conv3D layer
@@ -124,7 +124,7 @@ def test_Conv3DTranslator():
 
 def test_MaxPool1DTranslator():
     pool = eqx.nn.MaxPool1d(3, 2, padding=0)
-    translator = Translator()
+    translator = LayerTranslator()
     translation = translator(pool)
 
     # Check that the translation is a well-formed MaxPooling1D layer
@@ -142,7 +142,7 @@ def test_MaxPool1DTranslator():
 
 def test_MaxPool2DTranslator():
     pool = eqx.nn.MaxPool2d(3, 2, padding=0)
-    translator = Translator()
+    translator = LayerTranslator()
     translation = translator(pool)
 
     # Check that the translation is a well-formed MaxPooling2D layer
@@ -160,7 +160,7 @@ def test_MaxPool2DTranslator():
 
 def test_MaxPool3DTranslator():
     pool = eqx.nn.MaxPool3d(3, 2, padding=0)
-    translator = Translator()
+    translator = LayerTranslator()
     translation = translator(pool)
 
     # Check that the translation is a well-formed MaxPooling3D layer
@@ -178,7 +178,7 @@ def test_MaxPool3DTranslator():
 
 def test_AvgPool1DTranslator():
     pool = eqx.nn.AvgPool1d(3, 2, padding=0)
-    translator = Translator()
+    translator = LayerTranslator()
     translation = translator(pool)
 
     # Check that the translation is a well-formed AveragePooling1D layer
@@ -196,7 +196,7 @@ def test_AvgPool1DTranslator():
 
 def test_AvgPool2DTranslator():
     pool = eqx.nn.AvgPool2d(3, 2, padding=0)
-    translator = Translator()
+    translator = LayerTranslator()
     translation = translator(pool)
 
     # Check that the translation is a well-formed AveragePooling2D layer
@@ -214,7 +214,7 @@ def test_AvgPool2DTranslator():
 
 def test_AvgPool3DTranslator():
     pool = eqx.nn.AvgPool3d(3, 2, padding=0)
-    translator = Translator()
+    translator = LayerTranslator()
     translation = translator(pool)
 
     # Check that the translation is a well-formed AveragePooling3D layer
@@ -232,7 +232,7 @@ def test_AvgPool3DTranslator():
 
 def test_BatchNormalizationTranslator():
     bn = eqx.nn.BatchNorm1d(3)
-    translator = Translator()
+    translator = LayerTranslator()
     translation = translator(bn)
 
     # Check that the translation is a well-formed BatchNormalization layer
